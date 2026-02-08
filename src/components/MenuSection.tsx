@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 type MenuItem = {
   id: number;
@@ -30,9 +32,19 @@ const categories = ["All", "Coffee", "Breakfast", "Desserts"];
 
 export default function MenuSection() {
   const [active, setActive] = useState("All");
+  const [expanded, setExpanded] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const filtered = active === "All" ? menuItems : menuItems.filter((i) => i.category === active);
+  const initialCount = isMobile ? 3 : 6;
+  const showToggle = active === "All" && filtered.length > initialCount;
+  const visibleItems = active === "All" && !expanded ? filtered.slice(0, initialCount) : filtered;
+
+  const handleCategoryChange = (cat: string) => {
+    setActive(cat);
+    setExpanded(false);
+  };
 
   const handleOrder = (item: MenuItem) => {
     const text = encodeURIComponent(`Hi! I'd like to order: ${item.name} (₹${item.price}). Please confirm availability.`);
@@ -67,7 +79,7 @@ export default function MenuSection() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActive(cat)}
+              onClick={() => handleCategoryChange(cat)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                 active === cat
                   ? "bg-primary text-primary-foreground shadow-md"
@@ -81,46 +93,66 @@ export default function MenuSection() {
 
         {/* Menu Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.05 }}
-              className="group relative bg-card rounded-xl p-5 border border-border hover:shadow-lg transition-shadow"
-            >
-              {item.bestSeller && (
-                <span className="absolute top-3 right-3 bg-gold text-espresso text-xs font-bold px-2.5 py-0.5 rounded-full">
-                  Best Seller
-                </span>
-              )}
-              <h3 className="font-heading text-lg font-semibold text-card-foreground mb-1">
-                {item.name}
-              </h3>
-              <p className="text-muted-foreground text-sm mb-3 leading-relaxed">
-                {item.description}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-foreground font-bold text-lg">₹{item.price}</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleWishlist(item)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors"
-                  >
-                    ♡ Save
-                  </button>
-                  <button
-                    onClick={() => handleOrder(item)}
-                    className="text-xs px-3 py-1.5 rounded-full bg-forest text-accent-foreground font-semibold hover:opacity-90 transition-opacity"
-                  >
-                    Order →
-                  </button>
+          <AnimatePresence mode="popLayout">
+            {visibleItems.map((item, i) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, delay: i * 0.03 }}
+                className="group relative bg-card rounded-xl p-5 border border-border hover:shadow-lg transition-shadow"
+              >
+                {item.bestSeller && (
+                  <span className="absolute top-3 right-3 bg-gold text-espresso text-xs font-bold px-2.5 py-0.5 rounded-full">
+                    Best Seller
+                  </span>
+                )}
+                <h3 className="font-heading text-lg font-semibold text-card-foreground mb-1">
+                  {item.name}
+                </h3>
+                <p className="text-muted-foreground text-sm mb-3 leading-relaxed">
+                  {item.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-foreground font-bold text-lg">₹{item.price}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleWishlist(item)}
+                      className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors"
+                    >
+                      ♡ Save
+                    </button>
+                    <button
+                      onClick={() => handleOrder(item)}
+                      className="text-xs px-3 py-1.5 rounded-full bg-forest text-accent-foreground font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      Order →
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
+
+        {/* See More / Show Less Toggle */}
+        {showToggle && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-center mt-8"
+          >
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-primary text-primary font-medium text-sm hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+            >
+              {expanded ? "Show Less" : "See More"}
+              {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
+          </motion.div>
+        )}
       </div>
     </section>
   );
