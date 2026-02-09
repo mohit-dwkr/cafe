@@ -70,7 +70,7 @@ export default function Navbar() {
           </div>
 
           <a
-            href="tel:+919876543210"
+            href="tel:+919630955951"
             className="flex items-center gap-1.5 bg-forest text-accent-foreground px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             <Phone className="h-3.5 w-3.5" />
@@ -117,7 +117,7 @@ export default function Navbar() {
                 <span className="text-cream/70 text-sm">{open ? "Open Now" : "Closed"}</span>
               </div>
               <a
-                href="tel:+919876543210"
+                href="tel:+919630955951"
                 className="inline-flex items-center gap-1.5 bg-forest text-accent-foreground px-5 py-2.5 rounded-full text-sm font-semibold"
               >
                 <Phone className="h-3.5 w-3.5" />

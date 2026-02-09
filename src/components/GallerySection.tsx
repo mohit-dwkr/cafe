@@ -54,17 +54,46 @@ export default function GallerySection() {
           ))}
         </div>
 
-        <div className="text-center mt-10">
-          <a
-            href="https://instagram.com/brewandco"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 border border-border rounded-full text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          >
-            <Instagram className="h-4 w-4" />
-            Follow us on Instagram
-          </a>
-        </div>
+       <div className="text-center mt-12 pb-8">
+  <a
+    href="https://instagram.com/code_by_mohit"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group inline-flex items-center gap-3 px-8 py-4 bg-[#2D4236] text-[#FDF8F1] rounded-full text-sm font-bold tracking-wide shadow-xl hover:bg-[#1f2e25] transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-transparent hover:border-[#C5A267]/50"
+  >
+    {/* Instagram Icon with a subtle bounce on hover */}
+   <div className="relative flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-110">
+  <Instagram 
+    className="h-5 w-5 transition-all duration-500" 
+    style={{ stroke: "url(#insta-gradient)" }} 
+  />
+  <svg width="0" height="0" className="absolute">
+    <linearGradient id="insta-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop stopColor="#f9ce34" offset="0%" />
+      <stop stopColor="#ee2a7b" offset="50%" />
+      <stop stopColor="#6228d7" offset="100%" />
+    </linearGradient>
+  </svg>
+</div>
+    
+    <span className="border-l border-[#FDF8F1]/20 pl-3">
+      Follow us @code_by_mohit
+    </span>
+
+    {/* Small Arrow that appears on hover */}
+    <motion.span
+      initial={{ x: -5, opacity: 0 }}
+      whileHover={{ x: 0, opacity: 1 }}
+      className="hidden group-hover:inline-block ml-1"
+    >
+      →
+    </motion.span>
+  </a>
+  
+  <p className="text-muted-foreground text-xs mt-4 italic opacity-70">
+    See our daily specials & cozy vibes
+  </p>
+</div>
       </div>
     </section>
   );

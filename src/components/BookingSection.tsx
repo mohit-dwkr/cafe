@@ -33,7 +33,8 @@ export default function BookingSection() {
     const text = encodeURIComponent(
       `Hi! I want to book a table for ${form.name.trim()} on ${form.date} at ${form.time} for ${form.guests} people. Please confirm.`
     );
-    window.open(`https://wa.me/919876543210?text=${text}`, "_blank");
+   // window.open ki jagah ye use karein:
+window.location.href = `https://wa.me/919630955951?text=${text}`;
   };
 
   const inputClass = (field: string) =>
