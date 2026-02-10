@@ -1,15 +1,49 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
 import { motion } from "framer-motion";
 import { Wifi, PawPrint } from "lucide-react";
-import heroImage from "@/assets/hero-cafe.jpg";
+
+// ✅ Lovable wali default hero image
+import heroImage from "../assets/hero-cafe.jpg";
 
 export default function HeroSection() {
+  // ✅ Default state = Lovable content
+  const [hero, setHero] = useState({
+    title: "Authentic Brews & Cozy Corners.",
+    subtitle: "The best artisan coffee in the heart of Mumbai.",
+    image_url: heroImage,
+  });
+
+  // ✅ Supabase se data lao (safe overwrite)
+  useEffect(() => {
+  async function fetchHero() {
+    const { data } = await supabase
+      .from("Hero")
+      .select("*")
+      .single();
+
+    if (!data) return;
+
+    setHero((prev) => ({
+      title: data.title?.trim() ? data.title : prev.title,
+      subtitle: data.subtitle?.trim() ? data.subtitle : prev.subtitle,
+      image_url:
+        data.image_url && data.image_url.trim() !== ""
+          ? data.image_url
+          : prev.image_url,
+    }));
+  }
+
+  fetchHero();
+}, []);
+
   return (
     <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
         <img
-          src={heroImage}
-          alt="Brew & Co. cafe interior with warm lighting and artisan coffee"
+          src={hero.image_url}
+          alt="Cafe Interior"
           className="w-full h-full object-cover"
           loading="eager"
         />
@@ -34,11 +68,11 @@ export default function HeroSection() {
           </div>
 
           <h1 className="font-heading text-4xl sm:text-5xl md:text-7xl font-bold text-cream leading-tight mb-6 text-balance">
-            Authentic Brews &<br />Cozy Corners.
+            {hero.title}
           </h1>
 
           <p className="text-cream/70 text-base sm:text-lg max-w-xl mx-auto mb-10 font-light">
-            The best artisan coffee in the heart of Mumbai. Pet-friendly & work-from-cafe ready.
+            {hero.subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Coffee, Phone, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "../supabaseClient";
 
 const getIST = () => {
   const now = new Date();
@@ -24,17 +25,33 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [open, setOpen] = useState(isOpenNow());
+  // const [open, setOpen] = useState(isOpenNow());
+
+const [open, setOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
-    const interval = setInterval(() => setOpen(isOpenNow()), 60000);
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      clearInterval(interval);
     };
   }, []);
+
+
+useEffect(() => {
+  async function fetchStatus() {
+    const { data } = await supabase
+      .from("Status")
+      .select("is_open")
+      .single();
+
+    if (data) setOpen(data.is_open);
+  }
+
+  fetchStatus();
+}, []);
+
+
 
   return (
     <nav
