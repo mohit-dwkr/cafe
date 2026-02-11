@@ -3,18 +3,6 @@ import { Coffee, Phone, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../supabaseClient";
 
-const getIST = () => {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  return new Date(utc + 5.5 * 3600000);
-};
-
-const isOpenNow = () => {
-  const ist = getIST();
-  const hour = ist.getHours();
-  return hour >= 9 && hour < 23;
-};
-
 const navLinks = [
   { label: "Menu", href: "#menu" },
   { label: "Book a Table", href: "#booking" },
@@ -25,39 +13,75 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  // const [open, setOpen] = useState(isOpenNow());
-
-const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-
-useEffect(() => {
+ useEffect(() => {
+  // 1. Initial Fetch (Page load hote hi status check karein)
   async function fetchStatus() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("Status")
       .select("is_open")
+      .eq("id", 1) // Specific ID 1 fetch karein
       .single();
 
-    if (data) setOpen(data.is_open);
+    if (!error && data) {
+      setOpen(data.is_open);
+      console.log("Navbar Initial Load:", data.is_open);
+    }
   }
-
   fetchStatus();
+
+
+  
+  // 2. Realtime Subscription (SQL ke baad ab ye kaam karega)
+  const channel = supabase
+    .channel('status_live')
+    .on(
+      'postgres_changes',
+      { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'Status' 
+        // Filter hata diya hai testing ke liye taaki har update catch ho
+      },
+      (payload) => {
+        console.log("REALTIME SIGNAL RECEIVED:", payload.new.is_open);
+        setOpen(payload.new.is_open);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }, []);
 
+const handleMobileClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setMobileOpen(false);
 
+    setTimeout(() => {
+      const targetId = href.replace('#', '');
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    }, 300);
+  };
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-primary/95 backdrop-blur-md shadow-lg" : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-primary/95 backdrop-blur-md shadow-lg" : "bg-transparent"
+        }`}
     >
       <div className="container-cafe flex items-center justify-between h-16 md:h-20 px-4 md:px-8">
         <a href="#" className="flex items-center gap-2">
@@ -79,9 +103,8 @@ useEffect(() => {
 
           <div className="flex items-center gap-1.5 text-sm">
             <span
-              className={`h-2 w-2 rounded-full ${
-                open ? "bg-forest animate-pulse" : "bg-destructive"
-              }`}
+              className={`h-2 w-2 rounded-full ${open ? "bg-forest animate-pulse" : "bg-destructive"
+                }`}
             />
             <span className="text-cream/70">{open ? "Open Now" : "Closed"}</span>
           </div>
@@ -116,20 +139,20 @@ useEffect(() => {
           >
             <div className="px-4 pb-6 space-y-4">
               {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-cream/80 hover:text-cream text-base font-medium py-2"
-                >
-                  {link.label}
-                </a>
-              ))}
+  <a
+    key={link.href}
+    href={link.href}
+    // Purana onClick hata kar yeh naya logic lagayein
+    onClick={(e) => handleMobileClick(e, link.href)}
+    className="block text-cream/80 hover:text-cream text-base font-medium py-2"
+  >
+    {link.label}
+  </a>
+))}
               <div className="flex items-center gap-2 py-2">
                 <span
-                  className={`h-2 w-2 rounded-full ${
-                    open ? "bg-forest animate-pulse" : "bg-destructive"
-                  }`}
+                  className={`h-2 w-2 rounded-full ${open ? "bg-forest animate-pulse" : "bg-destructive"
+                    }`}
                 />
                 <span className="text-cream/70 text-sm">{open ? "Open Now" : "Closed"}</span>
               </div>

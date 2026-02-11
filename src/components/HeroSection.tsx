@@ -20,6 +20,7 @@ export default function HeroSection() {
     const { data } = await supabase
       .from("Hero")
       .select("*")
+      .eq('id', 3)
       .single();
 
     if (!data) return;
